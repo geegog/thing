@@ -1,6 +1,5 @@
 defmodule Thing do
 
-
   alias :mnesia, as: Mnesia
   @node_list [node()]
 
@@ -23,16 +22,15 @@ defmodule Thing do
   end
 
   def create(value) do
-    init()
     random_number = Enum.random(0..100)
-    data_to_write = fn -> Mnesia.write({:thing, random_number, value}) end
-    save(data_to_write)
+    record_to_write = fn -> Mnesia.write({:thing, random_number, value}) end
+    save(record_to_write)
   end
 
   def create(id, value) when id > 0 do
     case find(id) do
-      nil -> data_to_write = fn -> Mnesia.write({:thing, id, value}) end
-        save(data_to_write)
+      nil -> record_to_write = fn -> Mnesia.write({:thing, id, value}) end
+        save(record_to_write)
       _ -> {:error}
     end
   end
@@ -41,17 +39,17 @@ defmodule Thing do
     {:error}
   end
 
-  defp save(data_to_write) do
-    case Mnesia.transaction(data_to_write) do
+  defp save(record_to_write) do
+    case Mnesia.transaction(record_to_write) do
       {:atomic, :ok} -> {:atomic, :ok}
       error -> error
     end
   end
 
   def find(id) do
-    data_to_read = fn -> Mnesia.read({:thing, id}) end
-    case Mnesia.transaction(data_to_read) do
-      {:atomic, [data]} -> data
+    record_to_read = fn -> Mnesia.read({:thing, id}) end
+    case Mnesia.transaction(record_to_read) do
+      {:atomic, [record]} -> record
       {:atomic, []} -> nil
     end
   end
