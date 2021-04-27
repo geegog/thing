@@ -16,27 +16,25 @@ defmodule Thing do
     end
   end
 
-  def cleanup() do
+  def clean_up() do
     Mnesia.stop()
     Mnesia.delete_schema(@node_list)
   end
 
   def create(value) do
-    random_number = Enum.random(0..100)
-    record_to_write = fn -> Mnesia.write({:thing, random_number, value}) end
+    record_to_write = fn -> Mnesia.write({:thing, UUID.uuid4(), value}) end
     save(record_to_write)
   end
 
-  def create(id, value) when id > 0 do
-    case find(id) do
-      nil -> record_to_write = fn -> Mnesia.write({:thing, id, value}) end
-        save(record_to_write)
-      _ -> {:error}
+  def create(id, value) do
+    case UUID.info(id) do
+      {:ok, _}  -> case find(id) do
+        nil -> record_to_write = fn -> Mnesia.write({:thing, id, value}) end
+          save(record_to_write)
+        _ -> {:error}
+      end
+      {:error, _} -> {:error}
     end
-  end
-
-  def create(id, _value) when id <= 0 do
-    {:error}
   end
 
   defp save(record_to_write) do

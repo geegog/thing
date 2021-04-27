@@ -4,23 +4,24 @@ defmodule ThingTest do
 
   setup_all do
     Thing.init()
-    on_exit(fn -> Thing.cleanup() end)
+    on_exit(fn -> Thing.clean_up() end)
   end
 
   test "adds a new record" do
-    assert Thing.create(101, "the new record's value") == {:atomic, :ok}
+    id = UUID.uuid4()
+    assert Thing.create(id, "the new record's value") == {:atomic, :ok}
   end
 
-  test "id is not a positive integer" do
-    assert Thing.create(-1, "value") == {:error}
+  test "id is not a valid uuid" do
+    assert Thing.create(12345, "value") == {:error}
   end
 
   test "no match" do
-    assert Thing.find(104) == nil
+    assert Thing.find(UUID.uuid4()) == nil
   end
 
   test "id already exists" do
-    id = 102
+    id = UUID.uuid4()
     Thing.create(id, "the new record's value")
     assert Thing.create(id, "value") == {:error}
   end
